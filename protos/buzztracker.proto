@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package buzztracker.api.alpha;
+
+option go_package = "github.com/dammitbilly0ne/buzz-tracker/protos/gen/go/buzztrackerapialpha;protos";
+
+import "google/protobuf/timestamp.proto";
+
+service BuzzTrackerAPI {
+	rpc GetBeer(GetBeerRequest) returns (GetBeerResponse);
+}
+
+message GetBeerRequest {
+	string id = 1;
+}
+
+message GetBeerResponse {
+	Beer beer = 1;
+}
+
+message Beer{
+	string id = 1;
+	string name = 2;
+	string brewery = 3;
+	string beerType = 4;
+
+	google.protobuf.Timestamp last_updated = 5;
+
+}
