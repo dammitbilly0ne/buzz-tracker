@@ -149,6 +149,30 @@ func Test_GetBeer(t *testing.T) {
 
 	})
 	t.Run("it returns an error when the client errors", func(t *testing.T) {
+		repo := setupFixture()
+		m := repo.client.(*MockDynamoDBClient)
 
+		testID := "stan"
+
+		input := &dynamodb.GetItemInput{
+			TableName: aws.String(testTable),
+			Key: map[string]*dynamodb.AttributeValue{
+				"id": {
+					S: aws.String(testID),
+				},
+			},
+		}
+
+
+		expErr := errors.New("dynamo down")
+
+		m.On("GetItem", input).Return(nil, expErr)
+
+		actual, err := repo.GetBeer("stan")
+
+		assert.Nil(t, actual)
+		assert.Equal(t, expErr, err)
+
+		m.AssertExpectations(t)
 	})
 }
