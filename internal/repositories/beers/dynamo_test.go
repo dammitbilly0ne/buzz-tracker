@@ -148,4 +148,7 @@ func Test_GetBeer(t *testing.T) {
 		assert.Equal(t, expectedBeer, actual)
 
 	})
+	t.Run("it returns an error when the client errors", func(t *testing.T) {
+
+	})
 }
