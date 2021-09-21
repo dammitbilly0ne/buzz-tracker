@@ -11,7 +11,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const testTable = "testTable"
+const (
+	testTable = "testTable"
+	idField   = "id"
+)
 
 func setupFixture() *Dynamo {
 	return &Dynamo{
@@ -128,7 +131,7 @@ func Test_GetBeer(t *testing.T) {
 		input := &dynamodb.GetItemInput{
 			TableName: &repo.tableName,
 			Key: map[string]*dynamodb.AttributeValue{
-				"id": &dynamodb.AttributeValue{
+				idField: &dynamodb.AttributeValue{
 					S: aws.String("stan"),
 				},
 			},
@@ -162,7 +165,6 @@ func Test_GetBeer(t *testing.T) {
 				},
 			},
 		}
-
 
 		expErr := errors.New("dynamo down")
 
