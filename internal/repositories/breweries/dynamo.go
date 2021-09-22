@@ -22,13 +22,13 @@ type DynamoConfig struct {
 
 func NewDynamo(cfg *DynamoConfig) (*Dynamo, error) {
 	if cfg == nil {
-		return nil, errors.New("brewery cfg is required")
+		return nil, errors.New("cfg is required")
 	}
 	if cfg.Client == nil {
-		return nil, errors.New("brewery cfg.Client is required")
+		return nil, errors.New("Client is required")
 	}
 	if cfg.TableName == "" {
-		return nil, errors.New("brewery cfg.TableName is required")
+		return nil, errors.New("TableName is required")
 	}
 
 	return &Dynamo{
@@ -39,10 +39,10 @@ func NewDynamo(cfg *DynamoConfig) (*Dynamo, error) {
 
 func (r *Dynamo) CreateBrewery(brewery *entities.Brewery) error {
 	if brewery == nil {
-		return errors.New("a brewery is required")
+		return errors.New("brewery is required")
 	}
 	if brewery.Name == "" {
-		return errors.New("a brewery name is required")
+		return errors.New("brewery name is required")
 	}
 
 	return r.doCreateBrewery(brewery)

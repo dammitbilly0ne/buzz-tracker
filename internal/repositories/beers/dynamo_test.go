@@ -31,37 +31,39 @@ func Test_NewDynamo(t *testing.T) {
 			Client:    &mocks.MockDynamoDBClient{},
 			TableName: "testTable",
 		})
+
 		assert.Nil(t, err)
 		assert.NotNil(t, actual)
 		assert.NotNil(t, actual.client)
 		assert.Equal(t, "testTable", actual.tableName)
 	})
+
 	t.Run("it requires a config", func(t *testing.T) {
 		actual, err := NewDynamo(nil)
-		assert.Nil(t, actual)
-		assert.NotNil(t, err)
 
 		expErr := errors.New("cfg is required")
+		assert.Nil(t, actual)
+		assert.NotNil(t, err)
 		assert.Equal(t, expErr, err)
 	})
+
 	t.Run("it requires a Client", func(t *testing.T) {
 		actual, err := NewDynamo(&DynamoConfig{})
 
+		expERR := errors.New("cfg.Client is required")
 		assert.Nil(t, actual)
 		assert.NotNil(t, err)
-
-		expERR := errors.New("cfg.Client is required")
 		assert.Equal(t, expERR, err)
 	})
+
 	t.Run("it requires a TableName", func(t *testing.T) {
 		actual, err := NewDynamo(&DynamoConfig{
 			Client: &mocks.MockDynamoDBClient{},
 		})
 
+		expERR := errors.New("cfg.TableName is required")
 		assert.Nil(t, actual)
 		assert.NotNil(t, err)
-
-		expERR := errors.New("cfg.TableName is required")
 		assert.Equal(t, expERR, err)
 	})
 }
@@ -72,14 +74,15 @@ func TestDynamo_StoreBeer(t *testing.T) {
 
 		err := repo.StoreBeer(nil)
 		assert.Equal(t, errors.New(beerRequiredMsg), err)
-
 	})
+
 	t.Run("beer name is required", func(t *testing.T) {
 		repo := setupFixture()
 
 		err := repo.StoreBeer(&entities.Beer{})
 		assert.Equal(t, errors.New(beerNameRequiredMsg), err)
 	})
+
 	t.Run("it stores a beer", func(t *testing.T) {
 		repo := setupFixture()
 		m := repo.client.(*mocks.MockDynamoDBClient)
@@ -103,6 +106,7 @@ func TestDynamo_StoreBeer(t *testing.T) {
 		assert.Nil(t, err)
 		m.AssertExpectations(t)
 	})
+
 	t.Run("it returns an error when Dynamo errors", func(t *testing.T) {
 		repo := setupFixture()
 		m := repo.client.(*mocks.MockDynamoDBClient)
@@ -124,8 +128,8 @@ func TestDynamo_StoreBeer(t *testing.T) {
 		assert.Equal(t, expectedErr, err)
 		m.AssertExpectations(t)
 	})
-
 }
+
 func Test_GetBeer(t *testing.T) {
 	t.Run("a beer has been retrieved", func(t *testing.T) {
 		repo := setupFixture()
@@ -151,8 +155,8 @@ func Test_GetBeer(t *testing.T) {
 		actual, err := repo.GetBeer("stan")
 		assert.Nil(t, err)
 		assert.Equal(t, expectedBeer, actual)
-
 	})
+
 	t.Run("it returns an error when the client errors", func(t *testing.T) {
 		repo := setupFixture()
 		m := repo.client.(*mocks.MockDynamoDBClient)
