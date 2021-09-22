@@ -45,6 +45,9 @@ func (r *Dynamo) StoreBeer(beer *entities.Beer) error {
 	if beer == nil {
 		return errors.New(beerRequiredMsg)
 	}
+	if beer.ID == "" {
+		return errors.New("ID is required")
+	}
 	if beer.Name == "" {
 		return errors.New(beerNameRequiredMsg)
 	}

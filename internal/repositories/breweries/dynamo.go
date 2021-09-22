@@ -41,6 +41,9 @@ func (r *Dynamo) CreateBrewery(brewery *entities.Brewery) error {
 	if brewery == nil {
 		return errors.New("brewery is required")
 	}
+	if brewery.ID =="" {
+		return errors.New("ID is required")
+	}
 	if brewery.Name == "" {
 		return errors.New("brewery name is required")
 	}

@@ -69,6 +69,13 @@ func Test_NewDynamo(t *testing.T) {
 }
 
 func TestDynamo_CreateBrewery(t *testing.T) {
+	t.Run("brewery ID is required", func(t *testing.T) {
+		repo :=setupFixture()
+
+		err := repo.CreateBrewery(&entities.Brewery{})
+		assert.Equal(t, errors.New("ID is required"), err)
+	})
+
 	t.Run("brewery is required", func(t *testing.T) {
 		repo := setupFixture()
 

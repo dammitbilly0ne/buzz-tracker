@@ -76,6 +76,13 @@ func TestDynamo_StoreBeer(t *testing.T) {
 		assert.Equal(t, errors.New(beerRequiredMsg), err)
 	})
 
+	t.Run("ID is required", func(t *testing.T) {
+		repo := setupFixture()
+
+		err := repo.StoreBeer(nil)
+		assert.Equal(t, errors.New("ID is required"),err)
+	})
+
 	t.Run("beer name is required", func(t *testing.T) {
 		repo := setupFixture()
 
