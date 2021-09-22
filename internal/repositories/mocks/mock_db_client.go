@@ -1,4 +1,4 @@
-package breweries
+package mocks
 
 import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -11,11 +11,12 @@ type MockDynamoDBClient struct {
 	mock.Mock
 }
 
-func (m*MockDynamoDBClient) PutItem(input *dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error) {
+func (m *MockDynamoDBClient) PutItem(input *dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error) {
 	args := m.Called(input)
 	if args.Error(1) != nil {
 		return nil, args.Error(1)
 	}
+
 	return args.Get(0).(*dynamodb.PutItemOutput), nil
 }
 

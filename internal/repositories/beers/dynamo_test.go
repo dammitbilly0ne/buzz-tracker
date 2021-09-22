@@ -4,6 +4,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/dammitbilly0ne/buzz-tracker/internal/repositories/mocks"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
@@ -18,7 +20,7 @@ const (
 
 func setupFixture() *Dynamo {
 	return &Dynamo{
-		client:    &MockDynamoDBClient{},
+		client:    &mocks.MockDynamoDBClient{},
 		tableName: testTable,
 	}
 }
@@ -26,7 +28,7 @@ func setupFixture() *Dynamo {
 func Test_NewDynamo(t *testing.T) {
 	t.Run("it returns a valid dynamo", func(t *testing.T) {
 		actual, err := NewDynamo(&DynamoConfig{
-			Client:    &MockDynamoDBClient{},
+			Client:    &mocks.MockDynamoDBClient{},
 			TableName: "testTable",
 		})
 		assert.Nil(t, err)
@@ -53,7 +55,7 @@ func Test_NewDynamo(t *testing.T) {
 	})
 	t.Run("it requires a TableName", func(t *testing.T) {
 		actual, err := NewDynamo(&DynamoConfig{
-			Client: &MockDynamoDBClient{},
+			Client: &mocks.MockDynamoDBClient{},
 		})
 
 		assert.Nil(t, actual)
@@ -80,7 +82,7 @@ func TestDynamo_StoreBeer(t *testing.T) {
 	})
 	t.Run("it stores a beer", func(t *testing.T) {
 		repo := setupFixture()
-		m := repo.client.(*MockDynamoDBClient)
+		m := repo.client.(*mocks.MockDynamoDBClient)
 
 		testBeer := &entities.Beer{
 			ID:      "3",
@@ -103,7 +105,7 @@ func TestDynamo_StoreBeer(t *testing.T) {
 	})
 	t.Run("it returns an error when Dynamo errors", func(t *testing.T) {
 		repo := setupFixture()
-		m := repo.client.(*MockDynamoDBClient)
+		m := repo.client.(*mocks.MockDynamoDBClient)
 
 		testBeer := &entities.Beer{
 			Name: "stan",
@@ -127,7 +129,7 @@ func TestDynamo_StoreBeer(t *testing.T) {
 func Test_GetBeer(t *testing.T) {
 	t.Run("a beer has been retrieved", func(t *testing.T) {
 		repo := setupFixture()
-		m := repo.client.(*MockDynamoDBClient)
+		m := repo.client.(*mocks.MockDynamoDBClient)
 		input := &dynamodb.GetItemInput{
 			TableName: &repo.tableName,
 			Key: map[string]*dynamodb.AttributeValue{
@@ -153,7 +155,7 @@ func Test_GetBeer(t *testing.T) {
 	})
 	t.Run("it returns an error when the client errors", func(t *testing.T) {
 		repo := setupFixture()
-		m := repo.client.(*MockDynamoDBClient)
+		m := repo.client.(*mocks.MockDynamoDBClient)
 
 		testID := "stan"
 

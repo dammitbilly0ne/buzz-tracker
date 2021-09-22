@@ -2,6 +2,7 @@ package breweries
 
 import (
 	"errors"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
@@ -10,16 +11,16 @@ import (
 )
 
 type Dynamo struct {
-	client dynamodbiface.DynamoDBAPI
+	client    dynamodbiface.DynamoDBAPI
 	tableName string
 }
 
-type DynamoConfig struct{
-	Client dynamodbiface.DynamoDBAPI
+type DynamoConfig struct {
+	Client    dynamodbiface.DynamoDBAPI
 	TableName string
 }
 
-func NewDynamo(cfg *DynamoConfig)(*Dynamo, error) {
+func NewDynamo(cfg *DynamoConfig) (*Dynamo, error) {
 	if cfg == nil {
 		return nil, errors.New("brewery cfg is required")
 	}
@@ -30,8 +31,8 @@ func NewDynamo(cfg *DynamoConfig)(*Dynamo, error) {
 		return nil, errors.New("brewery cfg.TableName is required")
 	}
 
-	return &Dynamo {
-		client: cfg.Client,
+	return &Dynamo{
+		client:    cfg.Client,
 		tableName: cfg.TableName,
 	}, nil
 }
@@ -50,11 +51,12 @@ func (r *Dynamo) CreateBrewery(brewery *entities.Brewery) error {
 func (r *Dynamo) doCreateBrewery(brewery *entities.Brewery) error {
 	mapped, err := dynamodbattribute.MarshalMap(brewery)
 	if err != nil {
-		return err}
+		return err
+	}
 
 	_, err = r.client.PutItem(&dynamodb.PutItemInput{
 		TableName: &r.tableName,
-		Item: mapped,
+		Item:      mapped,
 	})
 	if err != nil {
 		return err
@@ -87,5 +89,3 @@ func (r *Dynamo) FindBrewery(id string) (*entities.Brewery, error) {
 	return brewery, nil
 
 }
-
-
