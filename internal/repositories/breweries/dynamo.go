@@ -1,17 +1,13 @@
-package beers
+package breweries
 
 import (
 	"errors"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/dammitbilly0ne/buzz-tracker/internal/entities"
-)
-
-const (
-	beerRequiredMsg     = "beer is required"
-	beerNameRequiredMsg = "name that beer"
 )
 
 type Dynamo struct {
@@ -29,10 +25,10 @@ func NewDynamo(cfg *DynamoConfig) (*Dynamo, error) {
 		return nil, errors.New("cfg is required")
 	}
 	if cfg.Client == nil {
-		return nil, errors.New("cfg.Client is required")
+		return nil, errors.New("Client is required")
 	}
 	if cfg.TableName == "" {
-		return nil, errors.New("cfg.TableName is required")
+		return nil, errors.New("TableName is required")
 	}
 
 	return &Dynamo{
@@ -41,47 +37,22 @@ func NewDynamo(cfg *DynamoConfig) (*Dynamo, error) {
 	}, nil
 }
 
-func (r *Dynamo) StoreBeer(beer *entities.Beer) error {
-	if beer == nil {
-		return errors.New(beerRequiredMsg)
+func (r *Dynamo) CreateBrewery(brewery *entities.Brewery) error {
+	if brewery == nil {
+		return errors.New("brewery is required")
 	}
-	if beer.ID == "" {
+	if brewery.ID =="" {
 		return errors.New("ID is required")
 	}
-	if beer.Name == "" {
-		return errors.New(beerNameRequiredMsg)
+	if brewery.Name == "" {
+		return errors.New("brewery name is required")
 	}
 
-	return r.doStoreBeer(beer)
+	return r.doCreateBrewery(brewery)
 }
 
-func (r *Dynamo) GetBeer(id string) (*entities.Beer, error) {
-	input := &dynamodb.GetItemInput{
-		TableName: &r.tableName,
-		Key: map[string]*dynamodb.AttributeValue{
-			"id": &dynamodb.AttributeValue{
-				S: aws.String(id),
-			},
-		},
-	}
-
-	output, err := r.client.GetItem(input)
-	if err != nil {
-		return nil, err
-	}
-
-	beer := &entities.Beer{}
-
-	err = dynamodbattribute.UnmarshalMap(output.Item, beer)
-	if err != nil {
-		return nil, err
-	}
-
-	return beer, nil
-}
-
-func (r *Dynamo) doStoreBeer(beer *entities.Beer) error {
-	mapped, err := dynamodbattribute.MarshalMap(beer)
+func (r *Dynamo) doCreateBrewery(brewery *entities.Brewery) error {
+	mapped, err := dynamodbattribute.MarshalMap(brewery)
 	if err != nil {
 		return err
 	}
@@ -95,4 +66,29 @@ func (r *Dynamo) doStoreBeer(beer *entities.Beer) error {
 	}
 
 	return nil
+}
+
+func (r *Dynamo) FindBrewery(id string) (*entities.Brewery, error) {
+	input := &dynamodb.GetItemInput{
+		TableName: &r.tableName,
+		Key: map[string]*dynamodb.AttributeValue{
+			"id": {
+				S: aws.String(id),
+			},
+		},
+	}
+	output, err := r.client.GetItem(input)
+	if err != nil {
+		return nil, err
+	}
+
+	brewery := &entities.Brewery{}
+
+	err = dynamodbattribute.UnmarshalMap(output.Item, brewery)
+	if err != nil {
+		return nil, err
+	}
+
+	return brewery, nil
+
 }

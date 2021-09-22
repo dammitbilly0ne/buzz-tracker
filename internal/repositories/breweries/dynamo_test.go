@@ -1,15 +1,15 @@
-package beers
+package breweries
 
 import (
 	"errors"
-	"testing"
-
-	"github.com/dammitbilly0ne/buzz-tracker/internal/repositories/mocks"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/dammitbilly0ne/buzz-tracker/internal/entities"
+	"testing"
+
+	"github.com/dammitbilly0ne/buzz-tracker/internal/repositories/mocks"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -26,19 +26,19 @@ func setupFixture() *Dynamo {
 }
 
 func Test_NewDynamo(t *testing.T) {
-	t.Run("it returns a valid dynamo", func(t *testing.T) {
+	t.Run("it returns a valid brewery dynamo", func(t *testing.T) {
 		actual, err := NewDynamo(&DynamoConfig{
 			Client:    &mocks.MockDynamoDBClient{},
-			TableName: "testTable",
+			TableName: testTable,
 		})
 
 		assert.Nil(t, err)
 		assert.NotNil(t, actual)
 		assert.NotNil(t, actual.client)
-		assert.Equal(t, "testTable", actual.tableName)
+		assert.Equal(t, testTable, actual.tableName)
 	})
 
-	t.Run("it requires a config", func(t *testing.T) {
+	t.Run("it requires a brewery config", func(t *testing.T) {
 		actual, err := NewDynamo(nil)
 
 		expErr := errors.New("cfg is required")
@@ -50,10 +50,10 @@ func Test_NewDynamo(t *testing.T) {
 	t.Run("it requires a Client", func(t *testing.T) {
 		actual, err := NewDynamo(&DynamoConfig{})
 
-		expERR := errors.New("cfg.Client is required")
+		expErr := errors.New("Client is required")
 		assert.Nil(t, actual)
 		assert.NotNil(t, err)
-		assert.Equal(t, expERR, err)
+		assert.Equal(t, expErr, err)
 	})
 
 	t.Run("it requires a TableName", func(t *testing.T) {
@@ -61,54 +61,57 @@ func Test_NewDynamo(t *testing.T) {
 			Client: &mocks.MockDynamoDBClient{},
 		})
 
-		expERR := errors.New("cfg.TableName is required")
+		expErr := errors.New("TableName is required")
 		assert.Nil(t, actual)
 		assert.NotNil(t, err)
-		assert.Equal(t, expERR, err)
+		assert.Equal(t, expErr, err)
 	})
 }
 
-func TestDynamo_StoreBeer(t *testing.T) {
-	t.Run("beer is required", func(t *testing.T) {
-		repo := setupFixture()
+func TestDynamo_CreateBrewery(t *testing.T) {
+	t.Run("brewery ID is required", func(t *testing.T) {
+		repo :=setupFixture()
 
-		err := repo.StoreBeer(nil)
-		assert.Equal(t, errors.New(beerRequiredMsg), err)
+		err := repo.CreateBrewery(&entities.Brewery{})
+		assert.Equal(t, errors.New("ID is required"), err)
 	})
 
-	t.Run("ID is required", func(t *testing.T) {
+	t.Run("brewery is required", func(t *testing.T) {
 		repo := setupFixture()
 
-		err := repo.StoreBeer(nil)
-		assert.Equal(t, errors.New("ID is required"),err)
+		err := repo.CreateBrewery(nil)
+		assert.Equal(t, errors.New("brewery is required"), err)
 	})
 
-	t.Run("beer name is required", func(t *testing.T) {
+	t.Run("brewery name is required", func(t *testing.T) {
 		repo := setupFixture()
 
-		err := repo.StoreBeer(&entities.Beer{})
-		assert.Equal(t, errors.New(beerNameRequiredMsg), err)
+		err := repo.CreateBrewery(&entities.Brewery{})
+		assert.Equal(t, errors.New("brewery name is required"), err)
 	})
 
-	t.Run("it stores a beer", func(t *testing.T) {
+	t.Run("it creates a brewery", func(t *testing.T) {
 		repo := setupFixture()
 		m := repo.client.(*mocks.MockDynamoDBClient)
 
-		testBeer := &entities.Beer{
-			ID:      "3",
-			Name:    "stan",
-			Brewery: "spokane",
-			Type:    "imperialIPA",
+		testBrewery := &entities.Brewery{
+			ID: "5",
+			Name: "Denada Drinks",
+			City: "Spokane",
+			State: "Washington",
+			Address: "123 Stacy Cr.",
+			PhoneNumber: "(232)495869-4949",
+			Website: "google.com",
 		}
 
-		mapped, _ := dynamodbattribute.MarshalMap(testBeer)
+		mapped, _ := dynamodbattribute.MarshalMap(testBrewery)
 
 		m.On("PutItem", &dynamodb.PutItemInput{
-			TableName: aws.String("testTable"),
-			Item:      mapped,
+			TableName: aws.String(testTable),
+			Item: mapped,
 		}).Return(&dynamodb.PutItemOutput{}, nil)
 
-		err := repo.StoreBeer(testBeer)
+		err := repo.CreateBrewery(testBrewery)
 
 		assert.Nil(t, err)
 		m.AssertExpectations(t)
@@ -118,57 +121,57 @@ func TestDynamo_StoreBeer(t *testing.T) {
 		repo := setupFixture()
 		m := repo.client.(*mocks.MockDynamoDBClient)
 
-		testBeer := &entities.Beer{
-			Name: "stan",
+		testBrewery := &entities.Brewery{
+			Name: "Denada Drinks",
 		}
 
-		mapped, _ := dynamodbattribute.MarshalMap(testBeer)
-		expectedErr := errors.New("dynammo has returned an error")
+		mapped, _ := dynamodbattribute.MarshalMap(testBrewery)
+		expErr := errors.New("dynamo has returned an error")
 		m.On("PutItem", &dynamodb.PutItemInput{
-			TableName: aws.String("testTable"),
-			Item:      mapped,
-		}).Return(nil, expectedErr)
+			TableName: aws.String(testTable),
+			Item: mapped,
+		}).Return(nil, expErr)
 
-		err := repo.StoreBeer(testBeer)
+		err := repo.CreateBrewery(testBrewery)
 
 		assert.NotNil(t, err)
-		assert.Equal(t, expectedErr, err)
+		assert.Equal(t, expErr, err)
 		m.AssertExpectations(t)
 	})
 }
 
-func Test_GetBeer(t *testing.T) {
-	t.Run("a beer has been retrieved", func(t *testing.T) {
+func TestDynamo_FindBrewery(t *testing.T) {
+	t.Run("a brewery has been found", func(t *testing.T) {
 		repo := setupFixture()
 		m := repo.client.(*mocks.MockDynamoDBClient)
 		input := &dynamodb.GetItemInput{
 			TableName: &repo.tableName,
 			Key: map[string]*dynamodb.AttributeValue{
-				idField: &dynamodb.AttributeValue{
-					S: aws.String("stan"),
+				idField: {
+					S: aws.String("Denada Drinks"),
 				},
 			},
 		}
 
-		expectedBeer := &entities.Beer{
-			ID: "stan",
+		expectedBrewery := &entities.Brewery{
+			ID:"5",
 		}
 
-		mapped, _ := dynamodbattribute.MarshalMap(expectedBeer)
+		mapped, _ := dynamodbattribute.MarshalMap(expectedBrewery)
 		m.On("GetItem", input).Return(&dynamodb.GetItemOutput{
 			Item: mapped,
 		}, nil)
 
-		actual, err := repo.GetBeer("stan")
+		actual, err := repo.FindBrewery("Denada Drinks")
 		assert.Nil(t, err)
-		assert.Equal(t, expectedBeer, actual)
+		assert.Equal(t, expectedBrewery, actual)
 	})
 
 	t.Run("it returns an error when the client errors", func(t *testing.T) {
 		repo := setupFixture()
 		m := repo.client.(*mocks.MockDynamoDBClient)
 
-		testID := "stan"
+		testID := "Denada Drinks"
 
 		input := &dynamodb.GetItemInput{
 			TableName: aws.String(testTable),
@@ -177,13 +180,14 @@ func Test_GetBeer(t *testing.T) {
 					S: aws.String(testID),
 				},
 			},
+
 		}
 
 		expErr := errors.New("dynamo down")
 
 		m.On("GetItem", input).Return(nil, expErr)
 
-		actual, err := repo.GetBeer("stan")
+		actual, err := repo.FindBrewery("Denada Drinks")
 
 		assert.Nil(t, actual)
 		assert.Equal(t, expErr, err)
