@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/dammitbilly0ne/buzz-tracker/internal/entities"
 	"github.com/dammitbilly0ne/buzz-tracker/internal/repositories/beers"
 	"github.com/dammitbilly0ne/buzz-tracker/protos"
 )
@@ -42,16 +41,4 @@ func (a *Alpha) GetBeer(ctx context.Context, req *protos.GetBeerRequest) (*proto
 	return &protos.GetBeerResponse{
 		Beer: beerToProto(beer),
 	}, nil
-}
-
-func beerToProto(beer *entities.Beer) *protos.Beer {
-	if beer == nil {
-		return nil
-	}
-	return &protos.Beer{
-		Id:       beer.ID,
-		Name:     beer.Name,
-		Brewery:  beer.Brewery,
-		BeerType: beer.Type,
-	}
 }
